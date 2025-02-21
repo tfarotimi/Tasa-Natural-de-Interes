@@ -7,10 +7,11 @@ rm(list=ls())
 # This directory should contain
 #   - an 'inputData' folder with data from the FRBNY site
 #   - an 'output' folder to store estimation results
-working.dir <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
+working.dir <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
 
 # Location of model code files
-code.dir    <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
+code.dir    <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
+
 
 if ((working.dir=='') | (code.dir=='')) {
   stop("Must specify working.dir and code.dir locations in run.hlw.ca.R file")
