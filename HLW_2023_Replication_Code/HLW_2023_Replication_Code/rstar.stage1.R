@@ -92,6 +92,9 @@ rstar.stage1 <- function(log.output,
     print('Stage 1: xi.00 from HP trend in log output')
     # Initialization of state vector for Kalman filter using HP trend of log output
     log.output.hp.trend <- hpfilter(log.output,freq=36000,type="lambda",drift=FALSE)$trend
+    #print stdev of log.output.hp.trend
+    print("st dev - trend " )
+    print(sd(log.output.hp.trend))
     g.pot <- log.output.hp.trend[(g.pot.start.index):length(log.output.hp.trend)]
     xi.00 <- c(100*g.pot[3:1])
   }
@@ -119,6 +122,10 @@ rstar.stage1 <- function(log.output,
   # The vector is unbounded unless values are otherwise specified
   theta.lb <- c(rep(-Inf,length(initial.parameters)))
   theta.ub <- c(rep(Inf,length(initial.parameters)))
+
+  #theta.lb[8] <- 0.1 # Lower bound on sigma_ystar
+  #theta.lb[param.num["sigma_ystar"]] <- 0.4
+
 
   # Set a lower bound for the Phillips curve slope (b_y) of b.y.constraint, if not NA
   # In HLW, b.y.constraint = 0.025

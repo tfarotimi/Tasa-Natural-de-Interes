@@ -59,8 +59,8 @@ setwd(working.dir)
 # NOTE: the sample dates MUST correspond to data in input file
 
 # Set the start and end dates of the estimation sample (format is c(year,quarter))
-sample.start <- c(1970,1)
-sample.end   <- c(2019,4)
+sample.start <- c(2009,1)
+sample.end   <- c(2023,1)
 
 # The estimation process uses data beginning 4 quarters prior to the sample start
 data.start    <- shiftQuarter(sample.start,-4)
@@ -165,7 +165,7 @@ if (use.kappa) {
 # =================
 
 # Read input data from FRBNY website
-ca.data <- read.xlsx("inputData/Holston_Laubach_Williams_CHL.xlsx", sheet="CHL Input Data",
+ca.data <- read.xlsx("inputData/Holston_Laubach_Williams_MEX.xlsx", sheet="MEX Input Data",
                       na.strings = ".", colNames=TRUE, rowNames=FALSE, detectDates = TRUE)
 
 ca.log.output             <- ca.data$gdp.log
@@ -226,5 +226,5 @@ output.ca <- format.output(country.estimation=ca.estimation,
                            run.se=run.se)
 
 # Save output to CSV
-write.table(output.ca, 'output/output.ch.csv', col.names=TRUE, quote=FALSE, row.names=FALSE, sep = ',', na = '')
+write.table(output.ca, 'output/output.mx.csv', col.names=TRUE, quote=FALSE, row.names=FALSE, sep = ',', na = '')
 print("estimation completed")

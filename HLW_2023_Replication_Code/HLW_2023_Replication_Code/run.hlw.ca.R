@@ -7,10 +7,10 @@ rm(list=ls())
 # This directory should contain
 #   - an 'inputData' folder with data from the FRBNY site
 #   - an 'output' folder to store estimation results
-working.dir <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
+working.dir <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
 
 # Location of model code files
-code.dir    <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
+code.dir    <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
 
 if ((working.dir=='') | (code.dir=='')) {
   stop("Must specify working.dir and code.dir locations in run.hlw.ca.R file")
@@ -58,8 +58,8 @@ setwd(working.dir)
 # NOTE: the sample dates MUST correspond to data in input file
 
 # Set the start and end dates of the estimation sample (format is c(year,quarter))
-sample.start <- c(2002,3)
-sample.end   <- c(2023,4)
+sample.start <- c(1965,1)
+sample.end   <- c(2019,4)
 
 # The estimation process uses data beginning 4 quarters prior to the sample start
 data.start    <- shiftQuarter(sample.start,-4)

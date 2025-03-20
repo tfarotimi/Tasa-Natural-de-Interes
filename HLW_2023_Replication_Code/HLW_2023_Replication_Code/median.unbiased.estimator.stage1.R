@@ -61,6 +61,10 @@ median.unbiased.estimator.stage1 <- function(series) {
             }
         }
     }
+
+        print("lame stage 3")
+        print(lame)
+
     if (mw <= valmw[1]) {
         lamm <- 0
     } else {

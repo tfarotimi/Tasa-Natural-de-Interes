@@ -7,10 +7,10 @@ rm(list=ls())
 # This directory should contain
 #   - an 'inputData' folder with data from the FRBNY site
 #   - an 'output' folder to store estimation results
-working.dir <- "C:/Users/FVILLARREAL/Documents/GitHub/Tasa-Natural-de-Interes/HLW_2023_Replication_Code/HLW_2023_Replication_Code"
+working.dir <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
 
 # Location of model code files
-code.dir    <- "C:/Users/FVILLARREAL/Documents/GitHub/Tasa-Natural-de-Interes/HLW_2023_Replication_Code/HLW_2023_Replication_Code"
+code.dir    <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
 
 
 if ((working.dir=='') | (code.dir=='')) {
@@ -60,7 +60,7 @@ setwd(working.dir)
 
 # Set the start and end dates of the estimation sample (format is c(year,quarter))
 sample.start <- c(2002,3)
-sample.end   <- c(2023,4)
+sample.end   <- c(2019,4)
 
 # The estimation process uses data beginning 4 quarters prior to the sample start
 data.start    <- shiftQuarter(sample.start,-4)
@@ -87,10 +87,10 @@ rm(list=ls())
 # This directory should contain
 #   - an 'inputData' folder with data from the FRBNY site
 #   - an 'output' folder to store estimation results
-working.dir <- "C:/Users/FVILLARREAL/Documents/GitHub/Tasa-Natural-de-Interes/HLW_2023_Replication_Code/HLW_2023_Replication_Code"
+working.dir <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
 
 # Location of model code files
-code.dir    <- "C:/Users/FVILLARREAL/Documents/GitHub/Tasa-Natural-de-Interes/HLW_2023_Replication_Code/HLW_2023_Replication_Code"
+code.dir    <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
 
 
 if ((working.dir=='') | (code.dir=='')) {
@@ -245,7 +245,7 @@ if (use.kappa) {
 # =================
 
 # Read input data from FRBNY website
-cl.data <- read.xlsx("inputData/Holston_Laubach_Williams_CHL.xlsx", sheet="CHL_Input_Data",
+cl.data <- read.xlsx("inputData/Holston_Laubach_Williams_CHL.xlsx", sheet="CHL Input Data",
                       na.strings = ".", colNames=TRUE, rowNames=FALSE, detectDates = TRUE)
 
 cl.log.output             <- cl.data$gdp.log
@@ -308,3 +308,4 @@ output.cl <- format.output(country.estimation=cl.estimation,
 # Save output to CSV
 
 write.table(output.cl, 'output/output.cl.csv', col.names=TRUE, quote=FALSE, row.names=FALSE, sep = ',', na = '')
+print("done!")

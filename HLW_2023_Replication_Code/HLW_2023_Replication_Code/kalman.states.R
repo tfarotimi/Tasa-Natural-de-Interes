@@ -16,6 +16,16 @@ kalman.states <- function(xi.tm1tm1, P.tm1tm1, F, Q, A, H, R, kappa, y, x) {
   return(list("filtered"=filtered, "smoothed"=smoothed))
 }
 kalman.states.filtered <- function(xi.tm1tm1, P.tm1tm1, F, Q, A, H, R, kappa, y, x, t.i=1) {
+
+  # if (dim(F)[1] == 6) {
+  #   #print all numbers in P.tm1tm1
+  
+  #   print(Q)
+  #   print(det(F %*% P.tm1tm1 %*% t(F)))
+  #   print(det( F %*% P.tm1tm1 %*% t(F) + Q))
+  #   print("done")
+  # }
+
   xi.ttm1 <- as.vector(F %*% xi.tm1tm1)
   P.ttm1 <- F %*% P.tm1tm1 %*% t(F) + Q
   prediction.error <- (as.vector(y[t.i,]) - as.vector(t(A) %*% as.vector(x[t.i,])) - as.vector(t(H) %*% xi.ttm1))

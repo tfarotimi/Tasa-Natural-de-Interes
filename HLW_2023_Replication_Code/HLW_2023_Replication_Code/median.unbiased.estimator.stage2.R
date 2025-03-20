@@ -60,6 +60,9 @@ median.unbiased.estimator.stage2 <- function(y, x, kappa.vec) {
         }
     }
 
+    print("lame stage 2")
+    print(lame)
+
     if (mw <= valmw[1]) {
         lamm <- 0
     } else {
