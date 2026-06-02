@@ -42,9 +42,6 @@ rstar.stage3 <- function(log.output,
     print('Stage 3: xi.00 from HP trend in log output')
     # Initialization of state vector for Kalman filter using HP trend of log output
     g.pot <- hpfilter(log.output,freq=36000,type="lambda",drift=FALSE)$trend # data.start : sample.end  
-    #print stdev of g.pot
-    print("stdev - gpot - stage 3")
-    print(sd(g.pot))
     g.pot.diff <- diff(g.pot) # (data.start+1) : sample.end
     xi.00 <- c(100*g.pot[(g.pot.start.index+2):(g.pot.start.index)],100*g.pot.diff[(g.pot.start.index-1+2):((g.pot.start.index-1))],0,0,0)
   }
@@ -82,6 +79,23 @@ rstar.stage3 <- function(log.output,
 
   # Initialize kappa vector: 1 in all periods
   kappa.is.vec <- rep(1, length(r.is))
+
+  
+  #Lm for vif 
+  phi_val <- 0.5  # or use the estimated value from your NLS model
+
+  x1 <- d
+  x2 <- y.is.l1 - phi_val * d.l1
+  x3 <- y.is.l2 - phi_val * d.l2
+  x4 <- ir.is
+  x5 <- rep(1, length(y.is))
+
+
+
+
+  lm.model <- lm(y.is ~ x1 + x2 + x3 + x4)
+  # install.packages("car") 
+
 
 
   # Phillips curve
@@ -133,9 +147,6 @@ rstar.stage3 <- function(log.output,
   theta.lb <- c(rep(-Inf,length(initial.parameters)))
   theta.ub <- c(rep(Inf,length(initial.parameters)))
 
-  #theta.lb[8] <- 0.1 # Lower bound on sigma_ystar
-  #theta.lb[param.num["sigma_ystar"]] <- 0.4
-
   # Set a lower bound for the Phillips curve slope (b_y) of b.y.constraint, if not NA
   # In HLW, b.y.constraint = 0.025
   if (!is.na(b.y.constraint)) {
@@ -151,7 +162,8 @@ rstar.stage3 <- function(log.output,
   if (!is.na(a.r.constraint)) {
       print(paste0("Setting an upper bound on a_3 of ",as.character(a.r.constraint)))
       if (initial.parameters[param.num["a_r"]] > a.r.constraint) {
-          initial.parameters[param.num["a_r"]] <- a.r.constraint
+          #initial.parameters[param.num["a_r"]] <- a.r.constraint
+          initial.parameters[param.num["a_r"]] <- lm.model$coefficients[2]
       }
       theta.ub[param.num["a_r"]] <- a.r.constraint
   }
@@ -204,9 +216,16 @@ rstar.stage3 <- function(log.output,
                                                        lambda.g=lambda.g, lambda.z=lambda.z, xi.00=xi.00, P.00=P.00,
                                                        use.kappa=use.kappa, kappa.inputs=kappa.inputs,
                                                        param.num=param.num)$ll.cum)}
-  nloptr.out <- nloptr(initial.parameters, f, eval_grad_f=function(x) {gradient(f, x)},
-                       lb=theta.lb,ub=theta.ub,
-                       opts=list("algorithm"="NLOPT_LD_LBFGS","xtol_rel"=1.0e-8,"maxeval"=5000))
+  xtol_values <- c(1.0e-08, 1.0e-07, 1.0e-06, 1.0e-05, 1.0e-04, 1.0e-03, 1.0e-02, 1.0e-01, 1.0)
+  for (xtol in xtol_values) {
+    nloptr.out <- nloptr(initial.parameters, f, eval_grad_f=function(x) {gradient(f, x)},
+                         lb=theta.lb, ub=theta.ub, opts=list("algorithm"="NLOPT_LD_LBFGS", "xtol_rel"=xtol, "maxeval"=5000))
+    if (all(abs(nloptr.out$solution) >= 0.0001) && 
+      nloptr.out$solution[param.num["a_r"]] < a.r.constraint) {
+      print("no excessively small parameters")
+      break
+    }
+  }
   theta <- nloptr.out$solution
 
   if (nloptr.out$status==-1 | nloptr.out$status==5) {

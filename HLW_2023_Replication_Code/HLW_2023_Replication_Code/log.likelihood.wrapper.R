@@ -20,6 +20,8 @@ log.likelihood.wrapper <- function(parameters, y.data, x.data, stage = NA,
         out <- unpack.parameters.stage3(parameters=parameters, y.data=y.data, x.data=x.data,
                                         lambda.g=lambda.g, lambda.z=lambda.z, xi.00=xi.00, P.00=P.00,
                                         use.kappa=use.kappa, kappa.inputs=kappa.inputs, param.num=param.num)
+        
+        #print c in parameters 
     } else {
         stop('You need to enter a stage number in log.likelihood.wrapper.')
     }
@@ -29,5 +31,7 @@ log.likelihood.wrapper <- function(parameters, y.data, x.data, stage = NA,
       eval(parse(text=paste0(n, "<-out$", n)))
   }
   # Return Kalman log likelihood 
+  #print a_r
+  
   return(kalman.log.likelihood(xi.tm1tm1=xi.00, P.tm1tm1=P.00, F=F, Q=Q, A=A, H=H, R=R, kappa=kappa.vec, y=y.data, x=x.data))
 }

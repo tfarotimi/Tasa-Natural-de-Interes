@@ -29,6 +29,8 @@ unpack.parameters.stage1 <- function(parameters, y.data, x.data, xi.00, P.00,
   Q         <- matrix(0, 3, 3)
   Q[1, 1]   <- parameters[param.num["sigma_ystar"]]^2
 
+  
+
   F <- matrix(0, 3, 3)
   F[1, 1] <- F[2, 1] <- F[3, 2] <- 1
 

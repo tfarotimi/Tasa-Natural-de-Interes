@@ -7,20 +7,51 @@
 median.unbiased.estimator.stage1 <- function(series) {
     t.end <- length(series)
     y <- 400 * diff(series)
-
     stat <- rep(t.end-2*4)
+    all_b <- rep(0, t.end-2*4+1)
+    all_s3 <- rep(0, t.end-2*4+1)
+    all_xi <- rep(0, t.end-2*4+1)
+    #create random series with mean 3 and sd 0.44 
+    #y <- rnorm(t.end-1, mean = 4.5269666, sd = 0.4411543) 
+    # y <- runif(t.end-1, min = 4.5269666 - sqrt(3), max = 4.5269666 + sqrt(3))
+
+    #test y for normal distribution
+    shapiro.test(y)
+    #interpret shapiro test 
+    print("if p-value < 0.05, reject null hypothesis of normality")
+    print(shapiro.test(y)$p.value)
+
+
+
+    all <- data.frame()
     for (i in 4:(t.end-5)) {
       xr <- cbind(rep(1, t.end-1), c(rep(0,i),rep(1,t.end-i-1)))
       xi <- solve(t(xr) %*% xr)
       b  <- solve(t(xr) %*% xr, t(xr) %*% y)
+      all_b[i] = b[2]
       s3 <- sum((y-xr%*%b)^2)/(t.end-2-1)
       stat[i+1-4] = b[2]/sqrt(s3*xi[2,2])
+      #add b[2], s3, xi[2,2], and stat[i+1-4] to dataframe
+      all <- rbind(all, c(b[2], s3, xi[2,2], stat[i+1-4]))
+      all_s3[i] = s3
+      all_xi[i] = xi[2,2]
+
     }
+
+        #rename columns of all dataframe
+    colnames(all) <- c("b2", "s3", "xi", "stat")
+
+    #save all to excel called stat test
+    write.csv(all, file = "stat_test.csv", row.names = FALSE)
+
+
 
     ew <- 0
     for (i in 1:length(stat)) {
         ew <- ew+exp(stat[i]^2/2)
     }
+
+
     ew  <- log(ew/length(stat))
     mw  <- sum(stat^2) / length(stat)
     qlr <- max(stat^2)
@@ -62,8 +93,7 @@ median.unbiased.estimator.stage1 <- function(series) {
         }
     }
 
-        print("lame stage 3")
-        print(lame)
+
 
     if (mw <= valmw[1]) {
         lamm <- 0

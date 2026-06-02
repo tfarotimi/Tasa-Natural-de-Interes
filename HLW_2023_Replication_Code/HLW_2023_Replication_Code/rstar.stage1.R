@@ -37,6 +37,7 @@ rstar.stage1 <- function(log.output,
   d.l1     <- covid.indicator[4:(t.end+3)]
   d.l2     <- covid.indicator[3:(t.end+2)]
 
+
   # If the start date is 2020:Q1 or later, run the model with COVID dummy included
   # Otherwise, initialize phi at zero
   if (is.na(fix.phi) & sample.end[1] >= 2020) {
@@ -92,9 +93,6 @@ rstar.stage1 <- function(log.output,
     print('Stage 1: xi.00 from HP trend in log output')
     # Initialization of state vector for Kalman filter using HP trend of log output
     log.output.hp.trend <- hpfilter(log.output,freq=36000,type="lambda",drift=FALSE)$trend
-    #print stdev of log.output.hp.trend
-    print("st dev - trend " )
-    print(sd(log.output.hp.trend))
     g.pot <- log.output.hp.trend[(g.pot.start.index):length(log.output.hp.trend)]
     xi.00 <- c(100*g.pot[3:1])
   }
@@ -184,9 +182,16 @@ rstar.stage1 <- function(log.output,
                                                        lambda.g=NA, lambda.z=NA, xi.00=xi.00, P.00=P.00,
                                                        use.kappa=use.kappa, kappa.inputs=kappa.inputs,
                                                        param.num=param.num)$ll.cum)}
-  nloptr.out <- nloptr(initial.parameters, f, eval_grad_f=function(x) {gradient(f, x)},
-                       lb=theta.lb,ub=theta.ub,
-                       opts=list("algorithm"="NLOPT_LD_LBFGS","xtol_rel"=1.0e-8,"maxeval"=5000))
+  #xtol_values <- c(1.0e-08, 1.0e-07, 1.0e-06, 1.0e-05, 1.0e-04, 1.0e-03, 1.0e-02, 1.0e-01, 1.0)
+  xtol_values <- c(1.0e-01)
+  for (xtol in xtol_values) {
+    nloptr.out <- nloptr(initial.parameters, f, eval_grad_f=function(x) {gradient(f, x)},
+                         lb=theta.lb, ub=theta.ub, opts=list("algorithm"="NLOPT_LD_LBFGS", "xtol_rel"=xtol, "maxeval"=5000))
+    if (all(abs(nloptr.out$solution) >= 0.0001)) {
+      print("no excessively small parameters")
+      break
+    }
+  }
   theta <- nloptr.out$solution
 
   if (nloptr.out$status==-1 | nloptr.out$status==5) {

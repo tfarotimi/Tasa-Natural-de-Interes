@@ -1,4 +1,4 @@
-rm(list=ls())
+rm(list = ls())
 
 # =================
 # DEFINE DIRECTORIES
@@ -7,24 +7,36 @@ rm(list=ls())
 # This directory should contain
 #   - an 'inputData' folder with data from the FRBNY site
 #   - an 'output' folder to store estimation results
-working.dir <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
+working.dir <- getwd()
 
 # Location of model code files
-code.dir    <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
+code.dir <- getwd()
 
 
-if ((working.dir=='') | (code.dir=='')) {
-  stop("Must specify working.dir and code.dir locations in run.hlw.ca.R file")
+if ((working.dir == "") | (code.dir == "")) {
+    stop("Must specify working.dir and code.dir locations in run.hlw.ca.R file")
 }
 
 # =================
 # LOAD R PACKAGES
 # =================
 
-if (!require("tis")) {install.packages("tis"); library("tis")} # Time series package
-if (!require("mFilter")) {install.packages("mFilter"); library("mFilter")} # HP filter
-if (!require("nloptr")) {install.packages("nloptr"); library("nloptr")} # Optimization
-if (!require("openxlsx")) {install.packages("openxlsx"); library("openxlsx")} # Input from and write to Excel
+if (!require("tis")) {
+    install.packages("tis")
+    library("tis")
+} # Time series package
+if (!require("mFilter")) {
+    install.packages("mFilter")
+    library("mFilter")
+} # HP filter
+if (!require("nloptr")) {
+    install.packages("nloptr")
+    library("nloptr")
+} # Optimization
+if (!require("openxlsx")) {
+    install.packages("openxlsx")
+    library("openxlsx")
+} # Input from and write to Excel
 
 # =================
 # LOAD CODE PACKAGES
@@ -59,11 +71,11 @@ setwd(working.dir)
 # NOTE: the sample dates MUST correspond to data in input file
 
 # Set the start and end dates of the estimation sample (format is c(year,quarter))
-sample.start <- c(2009,1)
-sample.end   <- c(2023,1)
+sample.start <- c(2007, 1)
+sample.end <- c(2019, 4)
 
 # The estimation process uses data beginning 4 quarters prior to the sample start
-data.start    <- shiftQuarter(sample.start,-4)
+data.start <- shiftQuarter(sample.start, -4)
 
 # Initialization of state vector and covariance matrix
 # Set as NA to follow procedure in HLW paper
@@ -80,10 +92,10 @@ P.00.stage3 <- NA
 a.r.constraint <- -0.0025
 
 # Lower bound on b_2 parameter (slope of the Phillips curve)
-b.y.constraint <- 0.025
 
+b.y.constraint <- 0.025
 # Set start index for g.pot series; used in state vector initialization
-g.pot.start.index <- 1 + ti(shiftQuarter(sample.start,-3),'quarterly')-ti(data.start,'quarterly')
+g.pot.start.index <- 1 + ti(shiftQuarter(sample.start, -3), "quarterly") - ti(data.start, "quarterly")
 
 # Set number of iterations for Monte Carlo standard error procedure
 niter <- 5000
@@ -124,39 +136,40 @@ fix.phi <- 0
 
 # NOTE: fix kappa at value by setting lower.bound=upper.bound=value
 
-kappa.inputs <- data.frame('name'=c('kappa2020Q2-Q4','kappa2021','kappa2022'),
-                           'year'=c(2020,2021,2022),
-                           'T.start'=c(NA,NA,NA),
-                           'T.end'=c(NA,NA,NA),
-                           'init'=c(1,1,1),
-                           'lower.bound'=c(1,1,1),
-                           'upper.bound'=c(Inf,Inf,Inf),
-                           'theta.index'=c(NA,NA,NA),
-                           't.stat.null'=c(1,1,1))
+kappa.inputs <- data.frame(
+    "name" = c("kappa2020Q2-Q4", "kappa2021", "kappa2022"),
+    "year" = c(2020, 2021, 2022),
+    "T.start" = c(NA, NA, NA),
+    "T.end" = c(NA, NA, NA),
+    "init" = c(1, 1, 1),
+    "lower.bound" = c(1, 1, 1),
+    "upper.bound" = c(Inf, Inf, Inf),
+    "theta.index" = c(NA, NA, NA),
+    "t.stat.null" = c(1, 1, 1)
+)
 
 # NOTE: Sets Q1-Q4 of years provided
 if (use.kappa) {
+    # Number of kappas introduced
+    n.kappa <- dim(kappa.inputs)[1]
+    for (k in 1:n.kappa) {
+        # Indexing to start of y_t vector
+        covid.variance.start.yq <- c(kappa.inputs$year[k], 1) - sample.start
 
-  # Number of kappas introduced
-   n.kappa <- dim(kappa.inputs)[1]
-  for (k in 1:n.kappa) {
-    # Indexing to start of y_t vector
-     covid.variance.start.yq <- c(kappa.inputs$year[k],1) - sample.start
+        kappa.inputs$T.start[k] <- max(covid.variance.start.yq[1] * 4 + covid.variance.start.yq[2] + 1, 0)
 
-    kappa.inputs$T.start[k] <- max(covid.variance.start.yq[1]*4 + covid.variance.start.yq[2] +1,0)
+        covid.variance.end.yq <- c(kappa.inputs$year[k], 4) - sample.start
 
-    covid.variance.end.yq <- c(kappa.inputs$year[k],4) - sample.start
+        kappa.inputs$T.end[k] <- max(covid.variance.end.yq[1] * 4 + covid.variance.end.yq[2] + 1, 0)
 
-    kappa.inputs$T.end[k] <- max(covid.variance.end.yq[1]*4 + covid.variance.end.yq[2] +1,0)
+        rm(covid.variance.start.yq, covid.variance.end.yq)
 
-    rm(covid.variance.start.yq, covid.variance.end.yq)
-
-    # Manual adjustment to start Kappa_2020 in second quarter
-    # Comment out under alternative specifications
-    if (kappa.inputs$year[k]==2020) {
-      kappa.inputs$T.start[k] <- kappa.inputs$T.start[k] + 1
+        # Manual adjustment to start Kappa_2020 in second quarter
+        # Comment out under alternative specifications
+        if (kappa.inputs$year[k] == 2020) {
+            kappa.inputs$T.start[k] <- kappa.inputs$T.start[k] + 1
+        }
     }
-  }
 }
 
 
@@ -165,52 +178,60 @@ if (use.kappa) {
 # =================
 
 # Read input data from FRBNY website
-ca.data <- read.xlsx("inputData/Holston_Laubach_Williams_MEX.xlsx", sheet="MEX Input Data",
-                      na.strings = ".", colNames=TRUE, rowNames=FALSE, detectDates = TRUE)
+ca.data <- read.xlsx("inputData/Holston_Laubach_Williams_MEX.xlsx",
+    sheet = "truncated",
+    na.strings = ".", colNames = TRUE, rowNames = FALSE, detectDates = TRUE
+)
 
-ca.log.output             <- ca.data$gdp.log
-ca.inflation              <- ca.data$inflation
+ca.log.output <- ca.data$gdp.log
+ca.inflation <- ca.data$inflation
 ca.inflation.expectations <- ca.data$inflation.expectations
-ca.nominal.interest.rate  <- ca.data$interest
-ca.real.interest.rate     <- ca.nominal.interest.rate - ca.inflation.expectations
-ca.covid.indicator        <- ca.data$covid.ind
+ca.nominal.interest.rate <- ca.data$interest
+ca.real.interest.rate <- ca.nominal.interest.rate - ca.inflation.expectations
+ca.covid.indicator <- ca.data$covid.ind
 
 
 # =================
 # ESTIMATION
 # =================
 
-ca.estimation <- run.hlw.estimation(log.output=ca.log.output,
-                                    inflation=ca.inflation,
-                                    real.interest.rate=ca.real.interest.rate,
-                                    nominal.interest.rate=ca.nominal.interest.rate,
-                                    covid.indicator=ca.covid.indicator,
-                                    a.r.constraint=a.r.constraint,
-                                    b.y.constraint=b.y.constraint,
-                                    g.pot.start.index=g.pot.start.index,
-                                    use.kappa=use.kappa,
-                                    kappa.inputs=kappa.inputs,
-                                    fix.phi=fix.phi,
-                                    xi.00.stage1=xi.00.stage1,
-                                    xi.00.stage2=xi.00.stage2,
-                                    xi.00.stage3=xi.00.stage3,
-                                    P.00.stage1=P.00.stage1,
-                                    P.00.stage2=P.00.stage2,
-                                    P.00.stage3=P.00.stage3,
-                                    run.se=run.se,
-                                    sample.end=sample.end)
+ca.estimation <- run.hlw.estimation(
+    log.output = ca.log.output,
+    inflation = ca.inflation,
+    real.interest.rate = ca.real.interest.rate,
+    nominal.interest.rate = ca.nominal.interest.rate,
+    covid.indicator = ca.covid.indicator,
+    a.r.constraint = a.r.constraint,
+    b.y.constraint = b.y.constraint,
+    g.pot.start.index = g.pot.start.index,
+    use.kappa = use.kappa,
+    kappa.inputs = kappa.inputs,
+    fix.phi = fix.phi,
+    xi.00.stage1 = xi.00.stage1,
+    xi.00.stage2 = xi.00.stage2,
+    xi.00.stage3 = xi.00.stage3,
+    P.00.stage1 = P.00.stage1,
+    P.00.stage2 = P.00.stage2,
+    P.00.stage3 = P.00.stage3,
+    run.se = run.se,
+    sample.end = sample.end
+)
 
 # One-sided (filtered) estimates
-one.sided.est.ca <- cbind(ca.estimation$out.stage3$rstar.filtered,
-                          ca.estimation$out.stage3$trend.filtered,
-                          ca.estimation$out.stage3$z.filtered,
-                          ca.estimation$out.stage3$output.gap.filtered)
+one.sided.est.ca <- cbind(
+    ca.estimation$out.stage3$rstar.filtered,
+    ca.estimation$out.stage3$trend.filtered,
+    ca.estimation$out.stage3$z.filtered,
+    ca.estimation$out.stage3$output.gap.filtered
+)
 
 # Two-sided (smoothed) estimates
-two.sided.est.ca <- cbind(ca.estimation$out.stage3$rstar.smoothed,
-                          ca.estimation$out.stage3$trend.smoothed,
-                          ca.estimation$out.stage3$z.smoothed,
-                          ca.estimation$out.stage3$output.gap.smoothed)
+two.sided.est.ca <- cbind(
+    ca.estimation$out.stage3$rstar.smoothed,
+    ca.estimation$out.stage3$trend.smoothed,
+    ca.estimation$out.stage3$z.smoothed,
+    ca.estimation$out.stage3$output.gap.smoothed
+)
 
 
 # =================
@@ -218,13 +239,15 @@ two.sided.est.ca <- cbind(ca.estimation$out.stage3$rstar.smoothed,
 # =================
 
 # Set up output for export
-output.ca <- format.output(country.estimation=ca.estimation,
-                           one.sided.est.country=one.sided.est.ca,
-                           real.rate.country=ca.real.interest.rate,
-                           start=sample.start,
-                           end=sample.end,
-                           run.se=run.se)
+output.ca <- format.output(
+    country.estimation = ca.estimation,
+    one.sided.est.country = one.sided.est.ca,
+    real.rate.country = ca.real.interest.rate,
+    start = sample.start,
+    end = sample.end,
+    run.se = run.se
+)
 
 # Save output to CSV
-write.table(output.ca, 'output/output.mx.csv', col.names=TRUE, quote=FALSE, row.names=FALSE, sep = ',', na = '')
+write.table(output.ca, "output/output.mx.csv", col.names = TRUE, quote = FALSE, row.names = FALSE, sep = ",", na = "")
 print("estimation completed")

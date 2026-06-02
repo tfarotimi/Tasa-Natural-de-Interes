@@ -25,6 +25,8 @@ kalman.states.filtered <- function(xi.tm1tm1, P.tm1tm1, F, Q, A, H, R, kappa, y,
   #   print(det( F %*% P.tm1tm1 %*% t(F) + Q))
   #   print("done")
   # }
+  print(Q[1,1])
+
 
   xi.ttm1 <- as.vector(F %*% xi.tm1tm1)
   P.ttm1 <- F %*% P.tm1tm1 %*% t(F) + Q
@@ -48,6 +50,7 @@ kalman.states.filtered <- function(xi.tm1tm1, P.tm1tm1, F, Q, A, H, R, kappa, y,
 }
 kalman.states.smoothed <- function(xi.ttm1.array, P.ttm1.array, xi.tt.array, P.tt.array,
                                    F, Q, A, H, R, kappa, y, x, t.i=dim(y)[1], xi.tp1T=NA, P.tp1T=NA) {
+
   n <- dim(xi.ttm1.array)[2]
   if (t.i == dim(y)[1]) {
     xi.tT <- xi.tt.array[t.i,]
@@ -59,6 +62,7 @@ kalman.states.smoothed <- function(xi.ttm1.array, P.ttm1.array, xi.tt.array, P.t
   } else {
     P.tt <- P.tt.array[((t.i-1)*n+1):(t.i*n),]
     P.tp1t <- P.ttm1.array[(t.i*n+1):((t.i+1)*n),]
+    #print(paste0("det = ", det(P.tp1t)))
     J.t <- P.tt %*% t(F) %*% solve(P.tp1t)
     xi.tt <- xi.tt.array[t.i,]
     xi.tp1t <- xi.ttm1.array[t.i+1,]

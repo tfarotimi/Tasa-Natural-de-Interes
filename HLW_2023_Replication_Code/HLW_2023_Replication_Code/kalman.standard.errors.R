@@ -202,6 +202,7 @@ kalman.standard.errors <- function(t.end, states, theta, y.data, x.data, stage,
     # See HLW 2017, footnote 7 for description of procedure
     # niter is the number of iterations; we discard draws that violate constraints
     while (good.draws < niter) {
+      print(paste0("Good draws: ", good.draws, " of ", niter))
       # Perturb the parameters in n.params.se (all estimated parameters)
       # Any fixed parameters are not perturbed, i.e. they remain fixed in SE computations
       param.perturbation <- c(rep(0, n.params)) # length of total theta vector

@@ -7,10 +7,10 @@ rm(list=ls())
 # This directory should contain
 #   - an 'inputData' folder with data from the FRBNY site
 #   - an 'output' folder to store estimation results
-working.dir <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
+working.dir <- "C:\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
 
 # Location of model code files
-code.dir    <- "C:\\Users\\tfarotimi\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
+code.dir    <- "C:\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replication_Code\\HLW_2023_Replication_Code"
 
 
 if ((working.dir=='') | (code.dir=='')) {
@@ -59,8 +59,12 @@ setwd(working.dir)
 # NOTE: the sample dates MUST correspond to data in input file
 
 # Set the start and end dates of the estimation sample (format is c(year,quarter))
-sample.start <- c(1970,1)
-sample.end   <- c(2019,4)
+sample.start <- c(2005,1)
+sample.end   <- c(2023,4)
+
+#convert sample.end to date format 
+start.date <- as.Date(paste(sample.start[1],sample.start[2],1,sep="-")) - 0*365.25 # 0*365.25 to avoid leap year issue
+end.date <- as.Date(paste(sample.end[1],sample.end[2],1,sep="-")) + 0*365.25 # 0*365.25 to avoid leap year issue
 
 # The estimation process uses data beginning 4 quarters prior to the sample start
 data.start    <- shiftQuarter(sample.start,-4)
@@ -104,7 +108,7 @@ use.kappa <- FALSE
 # fix.phi must be set at NA or a numeric value
 # Set as NA to estimate the COVID indicator coefficient
 # Set at a numeric value to fix phi at that value (e.g. 0)
-fix.phi <- 0
+fix.phi <- NA
 
 
 # =================
@@ -166,7 +170,10 @@ if (use.kappa) {
 
 # Read input data from FRBNY website
 ca.data <- read.xlsx("inputData/Holston_Laubach_Williams_CHL.xlsx", sheet="CHL Input Data",
-                      na.strings = ".", colNames=TRUE, rowNames=FALSE, detectDates = TRUE)
+            na.strings = ".", colNames=TRUE, rowNames=FALSE, detectDates = TRUE)
+
+# Filter data to match the sample period
+# ca.data <- subset(ca.data, Date >= start.date & Date <= end.date)
 
 ca.log.output             <- ca.data$gdp.log
 ca.inflation              <- ca.data$inflation
@@ -174,6 +181,7 @@ ca.inflation.expectations <- ca.data$inflation.expectations
 ca.nominal.interest.rate  <- ca.data$interest
 ca.real.interest.rate     <- ca.nominal.interest.rate - ca.inflation.expectations
 ca.covid.indicator        <- ca.data$covid.ind
+
 
 
 # =================
