@@ -1,0 +1,26 @@
+{
+    "id": "A7BD4C5B",
+    "path": "~/CEPAL/Tasa-Natural-de-Interes/HLW_2023_Replication_Code/HLW_2023_Replication_Code/run.hlw.chl.R",
+    "project_path": "run.hlw.chl.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1740491664722.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "25,0",
+        "scrollLine": "12"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1740510928,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1740510928,
+    "read_only": false,
+    "read_only_alternatives": []
+}

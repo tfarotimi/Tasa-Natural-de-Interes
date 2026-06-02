@@ -1,0 +1,24 @@
+{
+    "id": "37620817",
+    "path": "~/CEPAL/Tasa-Natural-de-Interes/HLW_2023_Replication_Code/HLW_2023_Replication_Code/calculate.covariance.R",
+    "project_path": "calculate.covariance.R",
+    "type": "r_source",
+    "hash": "0",
+    "contents": "",
+    "dirty": false,
+    "created": 1740493036189.0,
+    "source_on_save": false,
+    "relative_order": 4,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1740422287,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1740422287,
+    "read_only": false,
+    "read_only_alternatives": []
+}
