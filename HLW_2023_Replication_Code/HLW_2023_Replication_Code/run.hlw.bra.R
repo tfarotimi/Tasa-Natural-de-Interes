@@ -1,3 +1,5 @@
+setwd("C:/DS_ML/CEPAL/Tasa-Natural-de-Interes/HLW_2023_Replication_Code/HLW_2023_Replication_Code")
+
 rm(list=ls())
 
 # =================
@@ -14,7 +16,7 @@ code.dir    <- "C:\\Documents\\CEPAL\\Tasa-Natural-de-Interes\\HLW_2023_Replicat
 
 
 if ((working.dir=='') | (code.dir=='')) {
-  stop("Must specify working.dir and code.dir locations in run.hlw.ca.R file")
+  stop("Must specify working.dir and code.dir locations in run.hlw.br.R file")
 }
 
 # =================
@@ -30,7 +32,7 @@ if (!require("openxlsx")) {install.packages("openxlsx"); library("openxlsx")} # 
 # LOAD CODE PACKAGES
 # =================
 
-setwd(code.dir)
+# setwd(code.dir)
 source("kalman.log.likelihood.R")
 source("kalman.states.R")
 source("median.unbiased.estimator.stage1.R")
@@ -50,7 +52,7 @@ source("format.output.R")
 source("kalman.standard.errors.R")
 
 # Set working directory back to output location
-setwd(working.dir)
+# setwd(working.dir)
 
 # =================
 # DEFINE VARIABLES (See Technical Note)
@@ -169,18 +171,18 @@ if (use.kappa) {
 # =================
 
 # Read input data from FRBNY website
-ca.data <- read.xlsx("inputData/Holston_Laubach_Williams_BRA.xlsx", sheet="BRA Input Data",
+br.data <- read.xlsx("inputData/Holston_Laubach_Williams_BRA.xlsx", sheet="BRA Input Data",
             na.strings = ".", colNames=TRUE, rowNames=FALSE, detectDates = TRUE)
 
 # Filter data to match the sample period
-# ca.data <- subset(ca.data, Date >= start.date & Date <= end.date)
+# br.data <- subset(br.data, Date >= start.date & Date <= end.date)
 
-ca.log.output             <- ca.data$gdp.log
-ca.inflation              <- ca.data$inflation
-ca.inflation.expectations <- ca.data$inflation.expectations
-ca.nominal.interest.rate  <- ca.data$interest
-ca.real.interest.rate     <- ca.nominal.interest.rate - ca.inflation.expectations
-ca.covid.indicator        <- ca.data$covid.ind
+br.log.output             <- br.data$gdp.log
+br.inflation              <- br.data$inflation
+br.inflation.expectations <- br.data$inflation.expectations
+br.nominal.interest.rate  <- br.data$interest
+br.real.interest.rate     <- br.nominal.interest.rate - br.inflation.expectations
+br.covid.indicator        <- br.data$covid.ind
 
 
 
@@ -188,11 +190,11 @@ ca.covid.indicator        <- ca.data$covid.ind
 # ESTIMATION
 # =================
 
-ca.estimation <- run.hlw.estimation(log.output=ca.log.output,
-                                    inflation=ca.inflation,
-                                    real.interest.rate=ca.real.interest.rate,
-                                    nominal.interest.rate=ca.nominal.interest.rate,
-                                    covid.indicator=ca.covid.indicator,
+br.estimation <- run.hlw.estimation(log.output=br.log.output,
+                                    inflation=br.inflation,
+                                    real.interest.rate=br.real.interest.rate,
+                                    nominal.interest.rate=br.nominal.interest.rate,
+                                    covid.indicator=br.covid.indicator,
                                     a.r.constraint=a.r.constraint,
                                     b.y.constraint=b.y.constraint,
                                     g.pot.start.index=g.pot.start.index,
@@ -209,16 +211,16 @@ ca.estimation <- run.hlw.estimation(log.output=ca.log.output,
                                     sample.end=sample.end)
 
 # One-sided (filtered) estimates
-one.sided.est.ca <- cbind(ca.estimation$out.stage3$rstar.filtered,
-                          ca.estimation$out.stage3$trend.filtered,
-                          ca.estimation$out.stage3$z.filtered,
-                          ca.estimation$out.stage3$output.gap.filtered)
+one.sided.est.br <- cbind(br.estimation$out.stage3$rstar.filtered,
+                          br.estimation$out.stage3$trend.filtered,
+                          br.estimation$out.stage3$z.filtered,
+                          br.estimation$out.stage3$output.gap.filtered)
 
 # Two-sided (smoothed) estimates
-two.sided.est.ca <- cbind(ca.estimation$out.stage3$rstar.smoothed,
-                          ca.estimation$out.stage3$trend.smoothed,
-                          ca.estimation$out.stage3$z.smoothed,
-                          ca.estimation$out.stage3$output.gap.smoothed)
+two.sided.est.br <- cbind(br.estimation$out.stage3$rstar.smoothed,
+                          br.estimation$out.stage3$trend.smoothed,
+                          br.estimation$out.stage3$z.smoothed,
+                          br.estimation$out.stage3$output.gap.smoothed)
 
 
 # =================
@@ -226,13 +228,13 @@ two.sided.est.ca <- cbind(ca.estimation$out.stage3$rstar.smoothed,
 # =================
 
 # Set up output for export
-output.ca <- format.output(country.estimation=ca.estimation,
-                           one.sided.est.country=one.sided.est.ca,
-                           real.rate.country=ca.real.interest.rate,
+output.br <- format.output(country.estimation=br.estimation,
+                           one.sided.est.country=one.sided.est.br,
+                           real.rate.country=br.real.interest.rate,
                            start=sample.start,
                            end=sample.end,
                            run.se=run.se)
 
 # Save output to CSV
-write.table(output.ca, 'output/output.br.csv', col.names=TRUE, quote=FALSE, row.names=FALSE, sep = ',', na = '')
+write.table(output.br, 'output/output.br.csv', col.names=TRUE, quote=FALSE, row.names=FALSE, sep = ',', na = '')
 print("estimation completed")

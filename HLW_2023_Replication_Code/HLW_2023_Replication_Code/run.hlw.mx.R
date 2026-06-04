@@ -1,8 +1,10 @@
+setwd("C:/DS_ML/CEPAL/Tasa-Natural-de-Interes/HLW_2023_Replication_Code/HLW_2023_Replication_Code")
+
+
 rm(list = ls())
 
 # =================
 # DEFINE DIRECTORIES
-# =================
 
 # This directory should contain
 #   - an 'inputData' folder with data from the FRBNY site
@@ -14,7 +16,7 @@ code.dir <- getwd()
 
 
 if ((working.dir == "") | (code.dir == "")) {
-    stop("Must specify working.dir and code.dir locations in run.hlw.ca.R file")
+    stop("Must specify working.dir and code.dir locations in run.hlw.mx.R file")
 }
 
 # =================
@@ -37,6 +39,9 @@ if (!require("openxlsx")) {
     install.packages("openxlsx")
     library("openxlsx")
 } # Input from and write to Excel
+
+install.packages(c("car", "tis", "mFilter", "nloptr", "openxlsx"))
+
 
 # =================
 # LOAD CODE PACKAGES
@@ -64,6 +69,8 @@ source("kalman.standard.errors.R")
 # Set working directory back to output location
 setwd(working.dir)
 
+
+print("******************** Estimating MX ********************")
 # =================
 # DEFINE VARIABLES (See Technical Note)
 # =================
@@ -178,29 +185,29 @@ if (use.kappa) {
 # =================
 
 # Read input data from FRBNY website
-ca.data <- read.xlsx("inputData/Holston_Laubach_Williams_MEX.xlsx",
+mx.data <- read.xlsx("inputData/Holston_Laubach_Williams_MEX.xlsx",
     sheet = "truncated",
     na.strings = ".", colNames = TRUE, rowNames = FALSE, detectDates = TRUE
 )
 
-ca.log.output <- ca.data$gdp.log
-ca.inflation <- ca.data$inflation
-ca.inflation.expectations <- ca.data$inflation.expectations
-ca.nominal.interest.rate <- ca.data$interest
-ca.real.interest.rate <- ca.nominal.interest.rate - ca.inflation.expectations
-ca.covid.indicator <- ca.data$covid.ind
+mx.log.output <- mx.data$gdp.log
+mx.inflation <- mx.data$inflation
+mx.inflation.expectations <- mx.data$inflation.expectations
+mx.nominal.interest.rate <- mx.data$interest
+mx.real.interest.rate <- mx.nominal.interest.rate - mx.inflation.expectations
+mx.covid.indicator <- mx.data$covid.ind
 
 
 # =================
 # ESTIMATION
 # =================
 
-ca.estimation <- run.hlw.estimation(
-    log.output = ca.log.output,
-    inflation = ca.inflation,
-    real.interest.rate = ca.real.interest.rate,
-    nominal.interest.rate = ca.nominal.interest.rate,
-    covid.indicator = ca.covid.indicator,
+mx.estimation <- run.hlw.estimation(
+    log.output = mx.log.output,
+    inflation = mx.inflation,
+    real.interest.rate = mx.real.interest.rate,
+    nominal.interest.rate = mx.nominal.interest.rate,
+    covid.indicator = mx.covid.indicator,
     a.r.constraint = a.r.constraint,
     b.y.constraint = b.y.constraint,
     g.pot.start.index = g.pot.start.index,
@@ -218,19 +225,19 @@ ca.estimation <- run.hlw.estimation(
 )
 
 # One-sided (filtered) estimates
-one.sided.est.ca <- cbind(
-    ca.estimation$out.stage3$rstar.filtered,
-    ca.estimation$out.stage3$trend.filtered,
-    ca.estimation$out.stage3$z.filtered,
-    ca.estimation$out.stage3$output.gap.filtered
-)
+one.sided.est.mx <- cbind(
+    mx.estimation$out.stage3$rstar.filtered,
+    mx.estimation$out.stage3$trend.filtered,
+    mx.estimation$out.stage3$z.filtered,
+    mx.estimation$out.stage3$output.gap.filtered
+    
 
 # Two-sided (smoothed) estimates
-two.sided.est.ca <- cbind(
-    ca.estimation$out.stage3$rstar.smoothed,
-    ca.estimation$out.stage3$trend.smoothed,
-    ca.estimation$out.stage3$z.smoothed,
-    ca.estimation$out.stage3$output.gap.smoothed
+two.sided.est.mx <- cbind(
+    mx.estimation$out.stage3$rstar.smoothed,
+    mx.estimation$out.stage3$trend.smoothed,
+    mx.estimation$out.stage3$z.smoothed,
+    mx.estimation$out.stage3$output.gap.smoothed
 )
 
 
@@ -239,15 +246,15 @@ two.sided.est.ca <- cbind(
 # =================
 
 # Set up output for export
-output.ca <- format.output(
-    country.estimation = ca.estimation,
-    one.sided.est.country = one.sided.est.ca,
-    real.rate.country = ca.real.interest.rate,
+output.mx <- format.output(
+    country.estimation = mx.estimation,
+    one.sided.est.country = one.sided.est.mx,
+    real.rate.country = mx.real.interest.rate,
     start = sample.start,
     end = sample.end,
     run.se = run.se
 )
 
 # Save output to CSV
-write.table(output.ca, "output/output.mx.csv", col.names = TRUE, quote = FALSE, row.names = FALSE, sep = ",", na = "")
-print("estimation completed")
+write.table(output.mx, "output/output.mx.csv", col.names = TRUE, quote = FALSE, row.names = FALSE, sep = ",", na = "")
+print("******************** MX - estimation completed ********************")
